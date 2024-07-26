@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Interface</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  .container {
+    display: flex;
+    height: 100%;
+    max-width: 1200px; /* Adjusted for wider layout */
+    margin: auto;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+  .main-content {
+    flex: 3; /* Takes 3/4 of the space */
+    display: flex;
+    flex-direction: column;
+  }
+  .side-panel {
+    flex: 1; /* Takes 1/4 of the space */
+    border-left: 1px solid #ccc;
+    background: #f0f0f0; /* Different background color for side panel */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  .header, .side-header {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    background: #eee;
+  }
+  .chat-area {
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    justify-content: space-between;
+  }
+  .chat-column {
+    flex: 1;
+    margin: 0 5px;
+    overflow-y: auto;
+  }
+  .message {
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .user-message {
+    background: #e7f5ff;
+  }
+  .system-message {
+    background: #f1f1f1;
+    text-align: left; /* Align system messages to the left */
+  }
+  .input-area, .hallucination-area {
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    background: #eee;
+    display: flex;
+    justify-content: space-between; /* Adjust for button placement */
+  }
+  .input-area input, .hallucination-area select {
+    flex-grow: 1;
+    margin-right: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .input-area button, .hallucination-area button {
+    border: none;
+    border-radius: 5px;
+    background: #007bff; /* Adjusted button color */
+    color: white;
+    cursor: pointer;
+    padding: 5px 15px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="main-content">
+    <div class="header">
+      <h2>用户问题</h2>
+    </div>
+    <div class="chat-area">
+      <div class="chat-column" id="userChatArea">
+        <!-- User chat messages go here -->
+      </div>
+      <div class="chat-column" id="systemChatArea">
+        <!-- System chat messages go here -->
+      </div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="输入您的问题...">
+      <button onclick="submitQuestion()">提交</button>
+    </div>
+  </div>
+  <div class="side-panel">
+    <div class="side-header">
+      <h2>系统选项</h2>
+    </div>
+    <div class="hallucination-area">
+      <select id="categorySelect">
+        <option value="KBQA">KBQA</option>
+        <option value="CODE">CODE</option>
+        <option value="MATH">MATH</option>
+        <option value="SCIEN">SCIEN</option>
+      </select>
+      <button onclick="hallucinationCheck()">幻觉检测</button>
+    </div>
+  </div>
+</div>
+<script>
+// The JavaScript code would be largely unchanged, but you would modify the appendMessage function to handle two separate chat areas.
+</script>
+</body>
+</html>

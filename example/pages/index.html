@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+          nav {
+        width: 100%;
+        background-color: #0056b3;
+        padding: 10px 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
+    .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
+    .nav-logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+    }
+    .nav-menu {
+        list-style: none;
+        display: flex;
+        margin: 0;
+        padding: 0;
+    }
+    .nav-menu li {
+        margin-left: 20px;
+    }
+    .nav-menu a {
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .nav-menu a:hover {
+        background-color: #004494;
+        color: #fff;
+    }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            background-color: #f4f4f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .page-section {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .page-section div {
+            flex: 1;
+            margin: 10px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .page-section img {
+            width: 100px;
+            height: 100px;
+        }
+        .page-section button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .page-section button:hover {
+            background-color: #004494;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="nav-logo">FactTool</a>
+            <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="detectFront.html">FacTool QA</a></li>
+            <li><a href="toolFront.html">Fact Check Tool</a></li>
+            <li><a href="dataFront.html">Result Data Viewer</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Welcome to the Factuality Checking Tool</h1>
+        <p>Welcome to our collection of tools and viewers. Below are links to the various pages available on this site:</p>
+        <div class="page-section">
+            <div>
+                <img src="https://img.icons8.com/ios-filled/100/000000/question.png" alt="FacTool Icon">
+                <p>Submit prompts and responses for factuality checks.</p>
+                <button onclick="location.href='detectFront.html'">FacTool QA</button>
+            </div>
+            <div>
+                <img src="https://img.icons8.com/ios-filled/100/000000/check-file.png" alt="Fact Check Tool Icon">
+                <p>Check the factuality of submitted data and review detailed reports.</p>
+                <button onclick="location.href='toolFront.html'">Fact Check Tool</button>
+            </div>
+             <div>
+                <img src="https://img.icons8.com/ios-filled/100/000000/json.png" alt="JSONL Data Viewer Icon">
+                <p>View and interact with result data in a structured format.</p>
+                <button onclick="location.href='dataFront.html'">Result Data Viewer</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

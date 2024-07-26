@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            background-color: #f4f4f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .page-link {
+            margin: 10px 0;
+        }
+        .page-link a {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            background-color: #0056b3;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .page-link a:hover {
+            background-color: #004494;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Frontend Pages</h1>
+        <p>Welcome to our collection of tools and viewers. Below are links to the various pages available on this site:</p>
+        <div class="page-link">
+            <a href="dataFront.html">JSONL Data Viewer</a>
+            <p>View and interact with JSONL data in a structured format.</p>
+        </div>
+        <div class="page-link">
+            <a href="detectFront.html">FacTool</a>
+            <p>Submit prompts and responses for factuality checks.</p>
+        </div>
+        <div class="page-link">
+            <a href="toolFront.html">Fact Check Tool</a>
+            <p>Check the factuality of submitted data and review detailed reports.</p>
+        </div>
+    </div>
+</body>
+</html>

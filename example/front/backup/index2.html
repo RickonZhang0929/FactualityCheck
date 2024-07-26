@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            background-color: #f4f4f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .page-section {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .page-section div {
+            flex: 1;
+            margin: 10px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .page-section img {
+            width: 100px;
+            height: 100px;
+        }
+        .page-section button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .page-section button:hover {
+            background-color: #004494;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar Placeholder -->
+    <div id="nav-placeholder"></div>
+
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
+
+    <div class="container">
+        <h1>Welcome to the Frontend Pages</h1>
+        <p>Welcome to our collection of tools and viewers. Below are links to the various pages available on this site:</p>
+        <div class="page-section">
+            <div>
+                <img src="https://img.icons8.com/ios-filled/100/000000/json.png" alt="JSONL Data Viewer Icon">
+                <p>View and interact with JSONL data in a structured format.</p>
+                <button onclick="location.href='dataFront.html'">JSONL Data Viewer</button>
+            </div>
+            <div>
+                <img src="https://img.icons8.com/ios-filled/100/000000/check-file.png" alt="Fact Check Tool Icon">
+                <p>Check the factuality of submitted data and review detailed reports.</p>
+                <button onclick="location.href='toolFront.html'">Fact Check Tool</button>
+            </div>
+            <div>
+                <img src="https://img.icons8.com/ios-filled/100/000000/question.png" alt="FacTool Icon">
+                <p>Submit prompts and responses for factuality checks.</p>
+                <button onclick="location.href='detectFront.html'">FacTool</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

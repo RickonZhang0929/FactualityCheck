@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FacTool</title>
+<style>
+        body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #333;
+        flex-wrap: wrap;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        width: 80%;
+        min-width: 500px;
+        max-width: 1200px;
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+    textarea, select {
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+    }
+    button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button:hover {
+        background-color: #004494;
+    }
+    label {
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    #result {
+        font-size: 16px;
+        margin-top: 20px;
+    }
+    h2 {
+        background-color: #e8e8e8;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>FacTool</h1>
+        <h2>幻觉检测</h2>
+        <form id="factCheckForm">
+            <label for="prompt">Prompt:</label>
+            <textarea id="prompt" name="prompt" rows="4" required></textarea>
+
+            <label for="response">Response:</label>
+            <textarea id="response" name="response" rows="4" required></textarea>
+
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                <option value="kbqa">KBQA</option>
+                <!-- Add more categories as needed -->
+            </select>
+
+            <button type="button" onclick="submitFactCheck()">Submit</button>
+        </form>
+
+        <h2>Result:</h2>
+        <div id="result">Awaiting submission...</div>
+    </div>
+
+    <script>
+    function submitFactCheck() {
+        const promptValue = document.getElementById('prompt').value;
+        const responseValue = document.getElementById('response').value;
+        const categoryValue = document.getElementById('category').value;
+
+        const data = {
+            prompt: promptValue,
+            response: responseValue,
+            category: categoryValue
+        };
+
+        fetch('http://127.0.0.1:1829/process', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                const detailedInfo = data.detailed_information[0];
+                const container = document.getElementById('result');
+                container.innerHTML = '';
+
+                const title = document.createElement('h2');
+                title.textContent = 'Detailed Factuality Report';
+                container.appendChild(title);
+
+                const factuality = document.createElement('p');
+                factuality.textContent = 'Response Level Factuality: ' + (detailedInfo.response_level_factuality ? 'True' : 'False');
+                container.appendChild(factuality);
+
+                detailedInfo.claim_level_factuality.forEach((claim, index) => {
+                    const claimDiv = document.createElement('div');
+                    claimDiv.innerHTML = `<strong>Claim ${index + 1}:</strong> ${claim.claim}<br>
+                          <strong>Factuality:</strong> ${claim.factuality}<br>
+                          <strong>Reasoning:</strong>`;
+                    const reasoningList = document.createElement('ul');
+                    reasoningList.innerHTML = `<li>${claim.reasoning}</li>`;
+                    claimDiv.appendChild(reasoningList);
+                    container.appendChild(claimDiv);
+                });
+
+                detailedInfo.evidences.forEach((evidence, index) => {
+                    const evidenceDiv = document.createElement('div');
+                    evidenceDiv.innerHTML = `<strong>Evidence ${index + 1}:</strong>`;
+                    const innerEvidenceList = document.createElement('ul');
+                    evidence.evidence.forEach(e => {
+                        const eItem = document.createElement('li');
+                        eItem.textContent = e;
+                        innerEvidenceList.appendChild(eItem);
+                    });
+                    evidenceDiv.appendChild(innerEvidenceList);
+                    evidenceDiv.innerHTML += `<br><strong>Source:</strong> ${evidence.source.join(', ')}`;
+                    container.appendChild(evidenceDiv);
+                });
+                scrollToTop();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'Error retrieving data';
+            });
+    }
+
+    function scrollToTop() {
+        window.scrollTo(0, 0);
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f2f2f2;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    padding: 20px;
+  }
+  .sidebar, .main-content, .additional-info {
+    background: white;
+    padding: 20px;
+  }
+  .header, .footer, .additional-info {
+    grid-column: span 2;
+  }
+  .header, .footer {
+    background: #e6e6e6;
+  }
+  .sidebar, .main-content {
+    min-height: 200px;
+  }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+  }
+  .button {
+    padding: 10px 20px;
+    background: #4d90fe;
+    color: white;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <!-- Header content goes here -->
+  </div>
+  <div class="sidebar">
+    <!-- Sidebar content goes here -->
+  </div>
+  <div class="main-content">
+    <!-- Main content goes here -->
+  </div>
+  <div class="additional-info">
+    <!-- Additional info content goes here -->
+  </div>
+  <div class="footer">
+    <a href="#" class="button">按钮</a>
+    <a href="#" class="button">按钮</a>
+    <a href="#" class="button">按钮</a>
+  </div>
+</div>
+</body>
+</html>

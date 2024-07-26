@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONL Data Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+        #header {
+            text-align: center;
+            padding: 5px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ccc;
+        }
+        #main {
+            display: flex;
+            flex: 1;
+        }
+        #sidebar {
+            width: 150px;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .item {
+            cursor: pointer;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .item:hover {
+            background-color: #f0f0f0;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>幻觉检测结果详情</h1>
+    </div>
+    <div id="main">
+        <div id="sidebar">
+            <h2>目录</h2>
+            <div id="idList"></div>
+        </div>
+        <div id="content">
+            <pre id="jsonContent"></pre>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('detect.jsonl')
+                .then(response => response.text())
+                .then(data => {
+                    const lines = data.split('\n').filter(line => line.trim() !== '');
+                    const jsonData = lines.map((line, index) => ({
+                        id: index + 1,
+                        data: JSON.parse(line)
+                    }));
+
+                    const idList = document.getElementById('idList');
+                    const jsonContent = document.getElementById('jsonContent');
+
+                    jsonData.forEach(item => {
+                        const div = document.createElement('div');
+                        div.classList.add('item');
+                        div.textContent = `ID: ${item.id}`;
+                        div.addEventListener('click', () => {
+                            jsonContent.textContent = JSON.stringify(item.data, null, 2);
+                            hljs.highlightElement(jsonContent);
+                        });
+                        idList.appendChild(div);
+                    });
+                })
+                .catch(error => console.error('Error loading JSONL file:', error));
+        });
+    </script>
+</body>
+</html>

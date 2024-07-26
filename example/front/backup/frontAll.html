@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Integrated Tool</title>
+<style>
+    body, html {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        color: #333;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        width: 80%;
+        min-width: 500px;
+        max-width: 1200px;
+        margin: auto;
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+    textarea, select, #result {
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+    }
+    button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    button:hover {
+        background-color: #004494;
+    }
+    label {
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .tab {
+        cursor: pointer;
+        padding: 10px;
+        border: 1px solid #ccc;
+        display: inline-block;
+        background-color: #f4f4f9;
+    }
+    .tab.active, .tab:hover {
+        background-color: #ddd;
+    }
+    .content {
+        display: none;
+    }
+    .content.active {
+        display: block;
+    }
+</style>
+</head>
+<body>
+<div class="tab" onclick="showTab('tab1')">Factuality Detection</div>
+<div class="tab" onclick="showTab('tab2')">FacTool</div>
+
+<div class="container content active" id="tab1">
+   <div class="container">
+    <h1>Factuality Detection</h1>
+
+    <h2>提出问题</h2>
+    <form id="factCheckForm">
+        <label for="prompt">Prompt:</label>
+        <textarea id="prompt" name="prompt" rows="4" required></textarea>
+
+        <button type="button" onclick="sendMessage()">Submit</button>
+
+        <h2>Response:</h2>
+        <div id="response"></div>
+
+    <h2>幻觉检测</h2>
+        <label for="category">Category:</label>
+        <select id="category" name="category">
+            <option value="kbqa">KBQA</option>
+        </select>
+
+        <button type="button" onclick="submitFactCheck()">Check</button>
+    </form>
+
+    <h2>Result:</h2>
+    <div id="result">Awaiting submission...</div>
+</div>
+</div>
+
+<div class="container content" id="tab2">
+     <div class="container">
+        <h1>FacTool</h1>
+        <form id="factCheckForm2">
+            <label for="prompt">Prompt:</label>
+            <textarea id="prompt2" name="prompt" rows="4" required></textarea>
+
+            <label for="response">Response:</label>
+            <textarea id="response2" name="response" rows="4" required></textarea>
+
+            <label for="category">Category:</label>
+            <select id="category2" name="category">
+                <option value="kbqa">KBQA</option>
+                <!-- Add more categories as needed -->
+            </select>
+
+            <button type="button" onclick="submitFactCheck2()">Submit</button>
+        </form>
+
+        <h2>Result:</h2>
+        <div id="result">Awaiting submission...</div>
+    </div>
+</div>
+
+<script>
+    function showTab(tabId) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabId).style.display = "block";
+        document.getElementById(tabId).classList.add("active");
+        document.querySelector(`[onclick='showTab("${tabId}")']`).classList.add("active");
+    }
+
+     let res;
+    function sendMessage() {
+        const prompt = document.getElementById('prompt').value;
+        const data = {prompt: prompt};
+        return fetch('http://127.0.0.1:1829/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(async response => {
+            res = response.text()
+            document.getElementById('response').textContent = await res;
+            scrollToTop();
+        });
+    }
+
+    function submitFactCheck() {
+        const promptValue = document.getElementById('prompt').value;
+        const responseValue = document.getElementById('response').textContent;
+        const categoryValue = document.getElementById('category').value;
+
+        const data = {
+            prompt: promptValue,
+            response: responseValue,
+            category: categoryValue
+        };
+
+        fetch('http://127.0.0.1:1829/process', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                const detailedInfo = data.detailed_information[0];
+                const container = document.getElementById('result');
+                container.innerHTML = '';
+
+                const title = document.createElement('h2');
+                title.textContent = 'Detailed Factuality Report';
+                container.appendChild(title);
+
+                const factuality = document.createElement('p');
+                factuality.textContent = 'Response Level Factuality: ' + (detailedInfo.response_level_factuality ? 'True' : 'False');
+                container.appendChild(factuality);
+
+                detailedInfo.claim_level_factuality.forEach((claim, index) => {
+                    const claimDiv = document.createElement('div');
+                    claimDiv.innerHTML = `<strong>Claim ${index + 1}:</strong> ${claim.claim}<br>
+                          <strong>Factuality:</strong> ${claim.factuality}<br>
+                          <strong>Reasoning:</strong>`;
+                    const reasoningList = document.createElement('ul');
+                    reasoningList.innerHTML = `<li>${claim.reasoning}</li>`;
+                    claimDiv.appendChild(reasoningList);
+                    container.appendChild(claimDiv);
+                });
+
+                detailedInfo.evidences.forEach((evidence, index) => {
+                    const evidenceDiv = document.createElement('div');
+                    evidenceDiv.innerHTML = `<strong>Evidence ${index + 1}:</strong>`;
+                    const innerEvidenceList = document.createElement('ul');
+                    evidence.evidence.forEach(e => {
+                        const eItem = document.createElement('li');
+                        eItem.textContent = e;
+                        innerEvidenceList.appendChild(eItem);
+                    });
+                    evidenceDiv.appendChild(innerEvidenceList);
+                    evidenceDiv.innerHTML += `<br><strong>Source:</strong> ${evidence.source.join(', ')}`;
+                    container.appendChild(evidenceDiv);
+                });
+                scrollToTop();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'Error retrieving data';
+            });
+    }
+
+      function submitFactCheck2() {
+        const promptValue = document.getElementById('prompt').value;
+        const responseValue = document.getElementById('response').value;
+        const categoryValue = document.getElementById('category').value;
+
+        const data = {
+            prompt: promptValue,
+            response: responseValue,
+            category: categoryValue
+        };
+
+        fetch('http://127.0.0.1:1829/process', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                const detailedInfo = data.detailed_information[0];
+                const container = document.getElementById('result2');
+                container.innerHTML = '';
+
+                const title = document.createElement('h2');
+                title.textContent = 'Detailed Factuality Report';
+                container.appendChild(title);
+
+                const factuality = document.createElement('p');
+                factuality.textContent = 'Response Level Factuality: ' + (detailedInfo.response_level_factuality ? 'True' : 'False');
+                container.appendChild(factuality);
+
+                detailedInfo.claim_level_factuality.forEach((claim, index) => {
+                    const claimDiv = document.createElement('div');
+                    claimDiv.innerHTML = `<strong>Claim ${index + 1}:</strong> ${claim.claim}<br>
+                          <strong>Factuality:</strong> ${claim.factuality}<br>
+                          <strong>Reasoning:</strong>`;
+                    const reasoningList = document.createElement('ul');
+                    reasoningList.innerHTML = `<li>${claim.reasoning}</li>`;
+                    claimDiv.appendChild(reasoningList);
+                    container.appendChild(claimDiv);
+                });
+
+                detailedInfo.evidences.forEach((evidence, index) => {
+                    const evidenceDiv = document.createElement('div');
+                    evidenceDiv.innerHTML = `<strong>Evidence ${index + 1}:</strong>`;
+                    const innerEvidenceList = document.createElement('ul');
+                    evidence.evidence.forEach(e => {
+                        const eItem = document.createElement('li');
+                        eItem.textContent = e;
+                        innerEvidenceList.appendChild(eItem);
+                    });
+                    evidenceDiv.appendChild(innerEvidenceList);
+                    evidenceDiv.innerHTML += `<br><strong>Source:</strong> ${evidence.source.join(', ')}`;
+                    container.appendChild(evidenceDiv);
+                });
+                scrollToTop();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'Error retrieving data';
+            });
+    }
+
+    function scrollToTop() {
+        window.scrollTo(0, 0);
+    }
+
+</script>
+</body>
+</html>

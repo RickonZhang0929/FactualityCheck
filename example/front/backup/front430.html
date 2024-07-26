@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Chat Interface</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="main-container">
+    <div id="chat-container">
+        <div id="chat-history"></div>
+        <input type="text" id="chat-input" placeholder="输入你的问题..." autofocus>
+        <div id="options">
+            <select id="category">
+                <option value="KBQA">KBQA</option>
+                <option value="CODE">CODE</option>
+                <option value="MATH">MATH</option>
+                <option value="SCIEN">SCIEN</option>
+            </select>
+            <button id="hallucination-check">幻觉检测</button>
+        </div>
+    </div>
+    <div id="json-output"></div>
+</div>
+<script src="app.js"></script>
+
+
+<style>
+#main-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#chat-container {
+    width: 400px;
+    height: 600px;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: #f9f9f9;
+    margin: 20px;
+}
+
+#json-output {
+    width: 300px;
+    height: 600px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 20px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+#options {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+#chat-history, #chat-input, #options {
+    width: 100%;
+}
+</style>
+    <script>
+        document.getElementById('chat-input').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const input = event.target.value.trim();
+                if (input) {
+                    appendMessage(input, 'user');
+                    event.target.value = '';
+                    // 假设sendMessage是调用后端接口的函数
+                    sendMessage(input).then(response => {
+                        appendMessage(response, 'system');
+                    });
+                }
+            }
+        });
+
+        document.getElementById('hallucination-check').addEventListener('click', function () {
+            const prompt = getLastUserMessage();
+            const response = getLastSystemMessage();
+            const category = document.getElementById('category').value;
+            checkHallucination(prompt, response, category).then(json => {
+                displayJSON(json);
+            });
+        });
+
+        function appendMessage(text, type) {
+            const chatHistory = document.getElementById('chat-history');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', type);
+            messageDiv.textContent = text;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function sendMessage(prompt) {
+            // 这里需要根据后端API实际情况来调整
+            return fetch('api/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({prompt})
+            }).then(response => response.text());
+        }
+
+        function checkHallucination(prompt, response, category) {
+            // 这里需要根据后端API实际情况来调整
+            return fetch('api/hallucination_check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({prompt, response, category})
+            }).then(response => response.json());
+        }
+
+        function displayJSON(json) {
+            const output = document.getElementById('json-output');
+            output.textContent = JSON.stringify(json, null, 2);
+        }
+
+        function getLastUserMessage() {
+            const userMessages = document.querySelectorAll('.user');
+            return userMessages[userMessages.length - 1].textContent;
+        }
+
+        function getLastSystemMessage() {
+            const systemMessages = document.querySelectorAll('.system');
+            return systemMessages[systemMessages.length - 1].textContent;
+        }
+
+        </script>
+        </body>
+        </html>
