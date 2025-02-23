@@ -11,8 +11,8 @@ import os
 
 # 设置环境变量
 os.environ['OPENAI_API_KEY'] = "sk-lH0YfSFt0PrQMSBHTTjM3V03qgGTf1oXAMnG2Mfwkmckuqdl"
-os.environ['SERPER_API_KEY'] = "2f1fd6bf2797ff23cbfad8706b8f3b58f9840879"
-os.environ['SCRAPER_API_KEY'] = "33059e327a34f8ccfa193d16ad45863c"
+os.environ['SERPER_API_KEY'] = "71a9a751fba127c347e7f41bd261d4370beee90b"
+os.environ['SCRAPER_API_KEY'] = "73ace7682c4a312c68973be4cc1229f3"
 os.environ['OPENAI_API_BASE'] = "https://api.chatanywhere.tech/v1"
 # os.environ['OPENAI_API_KEY_PATH'] = "https://api.chatanywhere.tech/v1"
 

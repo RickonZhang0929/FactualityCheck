@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Display</title>
+    <style>
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .data-block {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 45%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Display</h1>
+    <div class="container">
+        <div id="claims" class="data-block">
+            <h2>Claims</h2>
+            <div id="claims-data"></div>
+        </div>
+        <div id="evidences" class="data-block">
+            <h2>Evidences</h2>
+            <div id="evidences-data"></div>
+        </div>
+        <div id="verifications" class="data-block">
+            <h2>Verifications</h2>
+            <div id="verifications-data"></div>
+        </div>
+        <div id="additional-data" class="data-block">
+            <h2>Additional Data</h2>
+            <div id="additional-data-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const eventSource = new EventSource('http://localhost:5001/events');
+
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const channel = data.channel;
+            const dataContent = data.data;
+
+            switch (channel) {
+                case 'claims_channel':
+                    document.getElementById('claims-data').innerText = JSON.stringify(dataContent, null, 2);
+                    break;
+                case 'evidences_channel':
+                    document.getElementById('evidences-data').innerText = JSON.stringify(dataContent, null, 2);
+                    break;
+                case 'verifications_channel':
+                    document.getElementById('verifications-data').innerText = JSON.stringify(dataContent, null, 2);
+                    break;
+                case 'additional_data_channel':
+                    document.getElementById('additional-data-content').innerText = JSON.stringify(dataContent, null, 2);
+                    break;
+                default:
+                    console.log('Unknown channel:', channel);
+            }
+        };
+
+        eventSource.onerror = function(error) {
+            console.error('EventSource error:', error);
+        };
+    </script>
+</body>
+</html>
+

@@ -209,6 +209,7 @@ class OpenAIChat():
             predictions = await self.dispatch_openai_requests(
                 messages_list=messages_list_cur,
             )
+            print(predictions)
 
             # preds = [self._type_check(self._boolean_fix(prediction['choices'][0]['message']['content']), expected_type) if prediction is not None else None for prediction in predictions]
             preds = [self._type_check(self._boolean_fix(prediction.choices[0].message.content), expected_type) if prediction is not None else None for prediction in predictions]
@@ -222,11 +223,12 @@ class OpenAIChat():
             messages_list_cur_index = [i for i in messages_list_cur_index if i not in finised_index]
             
             retry -= 1
-        
+
+        print(responses)
         return responses
 
 class OpenAIEmbed():
-    def __init__():
+    def __init__(self):
         openai.api_key = os.environ.get("OPENAI_API_KEY", None)
         assert openai.api_key is not None, "Please set the OPENAI_API_KEY environment variable."
         assert openai.api_key != '', "Please set the OPENAI_API_KEY environment variable."
@@ -257,7 +259,7 @@ if __name__ == "__main__":
     predictions = asyncio.run(chat.async_run(
         messages_list=[
             [{"role": "user", "content": "show either 'ab' or '['a']'. Do not do anything else."}],
-        ] * 20,
+        ] * 3,
         expected_type=List,
     ))
 

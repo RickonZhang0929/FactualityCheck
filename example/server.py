@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # Set environment variables for API keys
     os.environ['OPENAI_API_KEY'] = "sk-lH0YfSFt0PrQMSBHTTjM3V03qgGTf1oXAMnG2Mfwkmckuqdl"
     os.environ['SERPER_API_KEY'] = "2f1fd6bf2797ff23cbfad8706b8f3b58f9840879"
-    os.environ['SCRAPER_API_KEY'] = "33059e327a34f8ccfa193d16ad45863c"
+    os.environ['SCRAPER_API_KEY'] = "73ace7682c4a312c68973be4cc1229f3"
     os.environ['OPENAI_API_BASE'] = "https://api.chatanywhere.tech/v1"
 
     chat = OpenAIChat(model_name='gpt-3.5-turbo-0125')

@@ -1,5 +1,7 @@
 import asyncio
 from factool.knowledge_qa.google_serper import GoogleSerperAPIWrapper
+from factool.knowledge_qa.zhipu_serper import ZhipuWebSearchAPIWrapper
+from factool.knowledge_qa.zhipu_serper_new import ZhipuWebSearchAPIWrapperNew
 from factool.utils.openai_wrapper import OpenAIEmbed
 import json
 import os
@@ -7,12 +9,21 @@ import numpy as np
 import jsonlines
 import pdb
 
+
 class google_search():
     def __init__(self, snippet_cnt):
         self.serper = GoogleSerperAPIWrapper(snippet_cnt=snippet_cnt)
 
     async def run(self, queries):
         return await self.serper.run(queries)
+
+
+class zhihu_search():
+    def __init__(self, snippet_cnt):
+        self.serper = ZhipuWebSearchAPIWrapper(snippet_cnt=snippet_cnt)
+
+    async def run(self, queries):
+        return await self.serper.run_format(queries)
 
 class local_search():
     def __init__(self, snippet_cnt, data_link, embedding_link=None):

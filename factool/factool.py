@@ -1,3 +1,5 @@
+import json
+
 import asyncio
 import copy
 import pdb
@@ -191,3 +193,31 @@ class Factool():
 
         final_confidence = sum(weighted_confidences) / total_importance if total_importance > 0 else 0
         return final_confidence
+
+    def extract_lists_from_jsonl(self, jsonl_file_path, num_lines=None):
+        """
+        从jsonl文件中提取声明列表和证据列表，可控制读取的行数
+        """
+        claims_lists = []
+        evidences_lists = []
+        line_count = 0
+        with open(jsonl_file_path, 'r') as file:
+            for line in file:
+                if num_lines is not None and line_count >= num_lines:
+                    break
+                data = json.loads(line)
+                claims_lists.append(data.get("claims", []))
+                evidences_lists.append(data.get("evidence", []))
+                line_count += 1
+        return claims_lists, evidences_lists
+
+    def run_verification(self, jsonl_file_path):
+        """
+        主函数，协调从文件提取列表以及执行验证步骤
+        """
+        claims_lists, evidences_lists = self.extract_lists_from_jsonl(jsonl_file_path, 1)
+        all_verifications = []
+        for claims, evidences in zip(claims_lists, evidences_lists):
+            verifications = asyncio.run(self.pipelines["kbqa_online"].verification_only(claims, evidences))
+            all_verifications.append(verifications)
+        return all_verifications

@@ -79,7 +79,14 @@ class knowledge_qa_pipeline(pipeline):
             verifications_in_responses.append(verifications)
 
         return claims_in_responses, queries_in_responses, evidences_in_responses, sources_in_responses, verifications_in_responses
-    
+
+    async def verification_only(self, claims, evidences):
+        """
+        仅执行验证步骤，接收声明列表和证据列表，返回验证结果
+        """
+        verifications = await self._verification(claims, evidences)
+        return verifications
+
     async def run_with_tool_live_without_claim_extraction(self, claims):
         queries = await self._query_generation(claims)
         evidences = await self.tool.run(queries)

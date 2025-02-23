@@ -116,6 +116,26 @@
         border-radius: 4px;
         margin-top: 10px; /* Reduce margin above headers */
     }
+    .ip-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .ip-container input {
+        margin-right: 10px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 150px;
+    }
+    .ip-container button {
+        padding: 5px 10px;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+    .ip-container #current-ip {
+        margin-left: 10px;
+    }
 </style>
 </head>
 <body>
@@ -133,6 +153,12 @@
 
     <div class="container">
         <h1>Fact Check Tool</h1>
+        <div class="ip-container">
+            <input type="text" id="ip-input" placeholder="Enter IP address" value="192.168.1.8">
+            <button type="button" onclick="updateIpAddress()">Update IP</button>
+            <div id="current-ip">http://192.168.1.8:1829</div>
+        </div>
+
         <h2>幻觉检测</h2>
         <form id="factCheckForm">
             <label for="prompt">Prompt:</label>
@@ -155,24 +181,34 @@
     </div>
 
     <script>
-    function submitFactCheck() {
-        const promptValue = document.getElementById('prompt').value;
-        const responseValue = document.getElementById('response').value;
-        const categoryValue = document.getElementById('category').value;
+        let currentIpAddress = 'http://192.168.1.8:1829';
 
-        const data = {
-            prompt: promptValue,
-            response: responseValue,
-            category: categoryValue
-        };
+        function updateIpAddress() {
+            const newIpSegment = document.getElementById('ip-input').value;
+            if (newIpSegment) {
+                currentIpAddress = `http://${newIpSegment}:1829`;
+                document.getElementById('current-ip').textContent = currentIpAddress;
+            }
+        }
 
-        fetch('http://192.168.1.8:1829/process', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
+        function submitFactCheck() {
+            const promptValue = document.getElementById('prompt').value;
+            const responseValue = document.getElementById('response').value;
+            const categoryValue = document.getElementById('category').value;
+
+            const data = {
+                prompt: promptValue,
+                response: responseValue,
+                category: categoryValue
+            };
+
+            fetch(`${currentIpAddress}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
             .then(response => response.json())
             .then(data => {
                 console.log('Success:', data);
@@ -218,11 +254,11 @@
                 console.error('Error:', error);
                 document.getElementById('result').textContent = 'Error retrieving data';
             });
-    }
+        }
 
-    function scrollToTop() {
-        window.scrollTo(0, 0);
-    }
+        function scrollToTop() {
+            window.scrollTo(0, 0);
+        }
     </script>
 </body>
 </html>

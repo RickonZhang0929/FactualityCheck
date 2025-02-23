@@ -1,22 +1,25 @@
 import json
 import yaml
+import redis
 import os
 import time
 import math
 import pdb
 from typing import List, Dict
 
-from factool.knowledge_qa.tool import google_search
+from factool.knowledge_qa.tool import google_search, zhihu_search
 from factool.knowledge_qa.tool import local_search
 from factool.utils.base.pipeline import pipeline
 
 class knowledge_qa_pipeline_confidence(pipeline):
     def __init__(self, foundation_model, snippet_cnt, search_type, data_link=None, Embed_link=None):
         super().__init__('knowledge_qa', foundation_model)
+
         if (search_type == 'online'):
             self.tool = google_search(snippet_cnt=snippet_cnt)
         elif (search_type == 'local'):
             self.tool = local_search(snippet_cnt=snippet_cnt, data_link=data_link, embedding_link=Embed_link)
+
         with open(os.path.join(self.prompts_path, "claim_extraction_with_confidence.yaml"), 'r') as file:
             data = yaml.load(file, Loader=yaml.FullLoader)
         self.claim_prompt = data['knowledge_qa']
@@ -29,6 +32,10 @@ class knowledge_qa_pipeline_confidence(pipeline):
             data = yaml.load(file, Loader=yaml.FullLoader)
         self.verification_prompt = data['knowledge_qa']
 
+        with open(os.path.join(self.prompts_path, 'evidence_organization.yaml'), 'r') as file:
+            data = yaml.load(file, Loader=yaml.FullLoader)
+        self.evidence_organization_prompt = data['knowledge_qa']
+
     async def _claim_extraction(self, responses):
         messages_list = [
             [
@@ -37,7 +44,9 @@ class knowledge_qa_pipeline_confidence(pipeline):
             ]
             for response in responses
         ]
-        return await self.chat.async_run(messages_list, List)
+        res = await self.chat.async_run(messages_list, List)
+        print(res)
+        return res
 
     async def _query_generation(self, claims):
         if claims == None:
@@ -50,7 +59,9 @@ class knowledge_qa_pipeline_confidence(pipeline):
             ]
             for claim in claims
         ]
-        return await self.chat.async_run(messages_list, List)
+        res = await self.chat.async_run(messages_list, List)
+        print(res)
+        return res
 
     async def _verification(self, claims, evidences):
         messages_list = [
@@ -63,6 +74,26 @@ class knowledge_qa_pipeline_confidence(pipeline):
         ]
         return await self.chat.async_run(messages_list, dict)
 
+    async def _evidence_organization(self, evidences):
+        messages_list = [
+            [
+                {"role": "system", "content": self.evidence_organization_prompt['system']},
+                {"role": "user", "content": self.evidence_organization_prompt['user'].format(evidence_text=evidence)},
+            ]
+            for evidence in evidences
+        ]
+        return await self.chat.async_run(messages_list, dict)
+
+    async def _evidence_extraction(self, claims, prompts_parsed):
+        messages_list = [
+            [
+                {"role": "system", "content": self.verification_prompt['system']},
+                {"role": "user", "content": self.verification_prompt['evidence_extraction'].format(claim=claim['claim'], evidence=str(prompt_parsed))},
+            ]
+            for claim, prompt_parsed in zip(claims, prompts_parsed)
+        ]
+        return await self.chat.async_run(messages_list, List)
+
     async def run_with_tool_live(self, responses):
         claims_in_responses = await self._claim_extraction(responses)
         queries_in_responses = []
@@ -73,16 +104,19 @@ class knowledge_qa_pipeline_confidence(pipeline):
             queries = await self._query_generation(claims_in_response)
             queries_in_responses.append(queries)
             search_outputs_for_claims = await self.tool.run(queries)
+            print("searchResult:")
+            print(search_outputs_for_claims)
             evidences = [[output['content'] for output in search_outputs_for_claim] for search_outputs_for_claim in
                          search_outputs_for_claims]
-            evidences_in_responses.append(evidences)
+            organized_evidences = [await self._evidence_organization(evidence) for evidence in evidences]
+            evidences_in_responses.append(organized_evidences)
             sources = [[output['source'] for output in search_outputs_for_claim] for search_outputs_for_claim in
                        search_outputs_for_claims]
             sources_in_responses.append(sources)
             verifications = await self._verification(claims_in_response, evidences)
             verifications_in_responses.append(verifications)
 
-        return claims_in_responses, queries_in_responses, evidences_in_responses, sources_in_responses, verifications_in_responses
+        return claims_in_responses, queries_in_responses, ev  idences_in_responses, sources_in_responses, verifications_in_responses
 
     async def run_with_tool_api_call(self, prompts, responses):
         batch_size = 5

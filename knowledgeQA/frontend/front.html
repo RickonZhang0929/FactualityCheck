@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识库与文件管理系统</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+      flex-wrap: wrap;
+    }
+
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 1000px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #0056b3;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      background-color: #e8e8e8;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+
+    input[type="text"], input[type="file"], textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #0056b3;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #004494;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #f9f9f9;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .file-info, .knowledge-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .message {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f1f1f1;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <h1>知识库与文件管理系统</h1>
+
+    <!-- 创建知识库 -->
+    <div>
+      <h2>创建知识库</h2>
+      <input type="text" v-model="knowledgeName" placeholder="知识库名称" />
+      <input type="text" v-model="knowledgeDescription" placeholder="知识库描述" />
+      <button @click="createKnowledgeBase">创建知识库</button>
+    </div>
+
+    <!-- 显示知识库列表 -->
+    <div>
+      <h2>知识库列表</h2>
+      <button @click="fetchKnowledgeList">获取知识库列表</button>
+      <ul>
+        <li v-for="kb in knowledgeList" :key="kb.id" class="knowledge-info">
+          <div>
+            <strong>ID:</strong> {{ kb.id }} <br>
+            <strong>名称:</strong> {{ kb.name }} <br>
+            <strong>描述:</strong> {{ kb.description }}
+          </div>
+          <input type="radio" :value="kb.id" v-model="selectedKnowledgeId" @click="fetchFileList(kb.id)" />
+        </li>
+      </ul>
+    </div>
+
+    <!-- 上传文件到指定知识库 -->
+    <div>
+      <h2>上传文件到知识库</h2>
+      <form @submit.prevent="uploadFile">
+        <input type="file" @change="handleFileUpload" />
+        <input type="text" v-model="knowledgeId" placeholder="知识库 ID" />
+        <button type="submit">上传</button>
+      </form>
+      <div v-if="fileId" class="message success">
+        文件上传成功，文件ID: {{ fileId }}
+      </div>
+    </div>
+
+    <!-- 显示文件列表 -->
+    <div v-if="fileList.length">
+      <h2>文件列表</h2>
+      <ul>
+        <li v-for="file in fileList" :key="file.documentId" class="file-info">
+          <div>
+            <strong>文件ID:</strong> {{ file.documentId }} <br>
+            <strong>名称:</strong> {{ file.fileName }}
+          </div>
+        </li>
+      </ul>
+    </div>
+    <p v-else>当前未选择任何知识库或该知识库无文件</p>
+
+    <!-- 基于知识库的问答功能 -->
+    <div v-if="selectedKnowledgeId">
+      <h2>基于知识库的问答</h2>
+      <input type="text" v-model="question" placeholder="输入问题" />
+      <button @click="askQuestion">提问</button>
+      <div v-if="answer" class="message">
+        <h3>答案:</h3>
+        <p>{{ answer }}</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        knowledgeName: '',
+        knowledgeDescription: '',
+        knowledgeId: '',
+        selectedKnowledgeId: '',  // 当前选择的知识库ID
+        question: '',
+        answer: '',
+        fileId: '',
+        knowledgeList: [],
+        fileList: []  // 用于存储当前知识库的文件列表
+      },
+      methods: {
+        // 创建知识库
+        createKnowledgeBase() {
+          axios.post('http://localhost:5000/knowledge/create', {
+            name: this.knowledgeName,
+            description: this.knowledgeDescription
+          })
+          .then(response => {
+            alert('知识库创建成功，ID: ' + response.data.id);
+            this.fetchKnowledgeList();  // 创建成功后刷新知识库列表
+          })
+          .catch(error => {
+            console.error(error);
+          });
+        },
+
+        // 获取知识库列表
+        fetchKnowledgeList() {
+          axios.get('http://localhost:5000/knowledge/list')
+          .then(response => {
+            this.knowledgeList = response.data.list || [];
+          })
+          .catch(error => {
+            console.error(error);
+          });
+        },
+
+        // 上传文件
+        handleFileUpload(event) {
+          this.selectedFile = event.target.files[0];
+        },
+
+        uploadFile() {
+          const formData = new FormData();
+          formData.append('file', this.selectedFile);
+          formData.append('knowledge_id', this.knowledgeId);
+
+          axios.post('http://localhost:5000/upload', formData)
+            .then(response => {
+              this.fileId = response.data.file_id;
+              alert('文件上传成功，文件ID: ' + this.fileId);
+            })
+            .catch(error => {
+              console.error(error);
+            });
+        },
+
+        // 获取特定知识库的文件列表
+        fetchFileList(knowledgeId) {
+          axios.get(`http://localhost:5000/files/list?knowledge_id=${knowledgeId}`)
+          .then(response => {
+            this.fileList = response.data.list || [];
+            if (this.fileList.length === 0) {
+              alert('该知识库中没有文件');
+            }
+          })
+          .catch(error => {
+            console.error(error);
+          });
+        },
+
+        // 基于知识库的问答
+        askQuestion() {
+          if (!this.selectedKnowledgeId || !this.question) {
+            alert("请选择一个知识库并输入问题");
+            return;
+          }
+
+          axios.post('http://localhost:5000/ask', {
+            knowledge_id: this.selectedKnowledgeId,  // 将知识库ID传递给后端
+            question: this.question
+          })
+          .then(response => {
+            this.answer = response.data.answer;
+          })
+          .catch(error => {
+            console.error(error);
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

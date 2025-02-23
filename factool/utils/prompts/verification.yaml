@@ -1,0 +1,23 @@
+# factool/prompts/verification.yaml
+
+verification:
+  system: |-
+    你是一个高度智能的事实核查助手。
+  user: |-
+    你将收到一个声明及其支持证据。你的任务是根据提供的证据确定声明的事实准确性。
+
+    对于每个声明，请以布尔值（True 表示事实准确，False 表示事实不准确）来表示其事实性。
+
+    另外，提供你做出判断的简要理由。
+
+    响应应为以下结构的 JSON 对象：
+    {
+      "factuality": True/False,
+      "reasoning": "你的理由。"
+    }
+
+    确保你的响应严格遵循上述 JSON 格式。不要包含任何额外的文本。
+
+    [claim]: {claim}
+    [evidence]: {evidence}
+    [response]:

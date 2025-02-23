@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONL Data Viewer</title>
+    <!-- highlight.js 样式文件，可根据需要替换其他主题 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100%;
+        }
+        nav {
+            width: 100%;
+            background-color: #0056b3;
+            padding: 10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .nav-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-menu li {
+            margin-left: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .nav-menu a:hover {
+            background-color: #004494;
+            color: #fff;
+        }
+        #header {
+            text-align: center;
+            padding: 5px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ccc;
+            margin-top: 60px; /* 与固定的 nav 保持间距 */
+        }
+        #main {
+            display: flex;
+            flex: 1;
+            margin-top: 10px; /* 主体与 header 保持一点间距 */
+        }
+        #sidebar {
+            width: 200px;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            height: calc(100vh - 70px); /* 留出空间给固定 nav + header */
+            box-sizing: border-box;
+        }
+        #content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+        .item {
+            cursor: pointer;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .item:hover {
+            background-color: #f0f0f0;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        .fileName {
+            font-weight: bold;
+            color: #0056b3;
+            cursor: pointer;
+            margin: 6px 0;
+            display: block;
+        }
+        .fileName:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="nav-logo">FactTool</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="detectFront.html">FacTool QA</a></li>
+                <li><a href="toolFront.html">Fact Check Tool</a></li>
+                <li><a href="dataFront.html">Result Data Viewer</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 顶部标题 -->
+    <div id="header">
+        <h1>数据集查看器</h1>
+    </div>
+
+    <!-- 主体区域 -->
+    <div id="main">
+        <!-- 左侧侧边栏：文件列表 + 索引列表 -->
+        <div id="sidebar">
+            <h2>文件列表</h2>
+            <div id="fileList"></div>
+            <hr>
+            <h2>索引</h2>
+            <div id="idList"></div>
+        </div>
+
+        <!-- 右侧内容区：展示具体 JSON 内容 -->
+        <div id="content">
+            <pre id="jsonContent">请选择文件并点击索引查看内容</pre>
+        </div>
+    </div>
+
+    <!-- highlight.js 脚本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+
+    <script>
+        // 在这里列出想要读取的多个 .jsonl 文件（相对路径）
+        const filesToLoad = [
+            'factcheck-GPT-benchmark.jsonl',
+            'output0101gpt.jsonl',
+            'output_result0101.jsonl',
+            'output_clean0101.jsonl',
+            'output_clean0101_processed.jsonl',
+            'analysis_result.jsonl'
+        ];
+
+        // 用于保存当前加载的 JSON 数据行数组
+        let currentJsonData = [];
+
+        // DOM 元素引用
+        const fileListEl = document.getElementById('fileList');
+        const idListEl = document.getElementById('idList');
+        const jsonContentEl = document.getElementById('jsonContent');
+
+        // 页面加载完成后，初始化文件列表
+        document.addEventListener('DOMContentLoaded', function() {
+            initFileList();
+        });
+
+        // 初始化文件列表
+        function initFileList() {
+            // 清空 fileListEl
+            fileListEl.innerHTML = '';
+            // 根据 filesToLoad 数组，创建可点击的文件名标签
+            filesToLoad.forEach(file => {
+                const fileNameDiv = document.createElement('div');
+                fileNameDiv.classList.add('fileName');
+                fileNameDiv.textContent = file;
+
+                // 点击切换文件
+                fileNameDiv.addEventListener('click', () => {
+                    loadJsonlFile(file);
+                });
+
+                fileListEl.appendChild(fileNameDiv);
+            });
+        }
+
+        // 加载指定的 .jsonl 文件
+        function loadJsonlFile(filePath) {
+            fetch(filePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // 将文本按行切割并过滤空行
+                    const lines = data.split('\n').filter(line => line.trim() !== '');
+                    // 解析每一行 JSON，并加上一个 id
+                    currentJsonData = lines.map((line, index) => ({
+                        id: index + 1,
+                        data: JSON.parse(line)
+                    }));
+
+                    // 加载完成后，更新左侧的索引列表
+                    updateIdList();
+                    // 默认显示第一条，如果有数据的话
+                    if (currentJsonData.length > 0) {
+                        displayJsonContent(currentJsonData[0].data);
+                    } else {
+                        jsonContentEl.textContent = '文件内容为空或无法解析。';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading JSONL file:', error);
+                    jsonContentEl.textContent = '加载失败: ' + error.message;
+                    // 清空当前数据
+                    currentJsonData = [];
+                    idListEl.innerHTML = '';
+                });
+        }
+
+        // 更新 ID 索引列表
+        function updateIdList() {
+            // 清空
+            idListEl.innerHTML = '';
+
+            // 为每条数据创建一个可点击元素
+            currentJsonData.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('item');
+                div.textContent = `ID: ${item.id}`;
+
+                // 点击后显示对应内容
+                div.addEventListener('click', () => {
+                    displayJsonContent(item.data);
+                });
+
+                idListEl.appendChild(div);
+            });
+        }
+
+        // 在右侧内容区域显示选中的 JSON 数据
+        function displayJsonContent(jsonObj) {
+            // 将对象转为带缩进的字符串
+            jsonContentEl.textContent = JSON.stringify(jsonObj, null, 2);
+            // 使用 highlight.js 进行高亮
+            hljs.highlightElement(jsonContentEl);
+        }
+    </script>
+</body>
+</html>

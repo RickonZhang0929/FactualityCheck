@@ -12,7 +12,7 @@ from factool.env_config import factool_env_config
 
 # env
 # serper_api_key = factool_env_config.serper_api_key
-os.environ['SERPER_API_KEY'] = "2f1fd6bf2797ff23cbfad8706b8f3b58f9840879"
+os.environ['SERPER_API_KEY'] = "71a9a751fba127c347e7f41bd261d4370beee90b"
 class GoogleSerperAPIWrapper():
     """Wrapper around the Serper.dev Google Search API.
     You can create a free API key at https://serper.dev.
